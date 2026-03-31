@@ -5,3 +5,7 @@
 # app secrets
 .env
 output/*
+
+meilisearch_data/*
+
+__pycache__/*

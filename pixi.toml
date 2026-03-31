@@ -12,6 +12,8 @@ index-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
 [tasks]
 prefect-serve="prefect server start"
 meilisearch-serve="meilisearch --db-path ./meilisearch_data --master-key=bT8kB0bK9iK0nF5x"
+api-serve="uvicorn server.main:app --reload --host 0.0.0.0 --port 8000"
+api-serve="uvicorn server.main:app --reload --host 0.0.0.0 --port 8000"
 
 [dependencies]
 python = "==3.12"
@@ -22,3 +24,6 @@ crawl4ai = ">=0.8.6, <0.9"
 prefect = ">=3.6.24, <4"
 meilisearch = ">=0.40.0, <0.41"
 redis = ">=5.2.1, <6"
+fastapi = ">=0.115.0, <0.116"
+uvicorn = ">=0.32.0, <0.33"
+pydantic = ">=2.0.0, <3"
