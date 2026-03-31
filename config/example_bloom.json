@@ -1,0 +1,39 @@
+{
+  "workspace": "example",
+  "sites": [
+    {
+      "name": "食品伙伴网",
+      "sections": [
+        {
+          "name": "中国食品",
+          "mode": "list",
+          "prompt": "news_article",
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/guonei/list_{page}.html",
+              "page_start": 1,
+              "page_end": 3
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        },
+        {
+          "name": "国际食品",
+          "mode": "list",
+          "prompt": "news_article",
+          "skip_bloom_filter": true,
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/guoji/list_{page}.html",
+              "page_start": 1,
+              "page_end": 2
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        }
+      ]
+    }
+  ]
+}

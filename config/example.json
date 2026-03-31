@@ -1,0 +1,123 @@
+{
+  "workspace": "example",
+  "sites": [
+    {
+      "name": "Hiperbaric",
+      "competitor_id": "hiperbaric",
+
+      "sections": [
+        {
+          "name": "产品中心",
+          "mode": "list",
+          "data_type": "products",
+          "prompt": "competitor_product",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.hiperbaric.com/en/products/page/{page}/",
+              "page_start": 1,
+              "page_end": 3
+            },
+            "link_filter_pattern": "/en/products/[^/]+/$"
+          }
+        },
+
+        {
+          "name": "应用案例",
+          "mode": "list",
+          "data_type": "cases",
+          "prompt": "competitor_case",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.hiperbaric.com/en/cases/page/{page}/",
+              "page_start": 1,
+              "page_end": 2
+            },
+            "link_filter_pattern": "/en/cases/[^/]+/$"
+          }
+        },
+
+        {
+          "name": "新闻动态",
+          "mode": "list",
+          "data_type": "news",
+          "prompt": "competitor_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.hiperbaric.com/en/news/page/{page}/",
+              "page_start": 1,
+              "page_end": 3
+            },
+            "link_filter_pattern": "/en/news/[^/]+/$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "中国农业大学",
+
+      "sections": [
+        {
+          "name": "科学研究",
+          "mode": "list",
+          "prompt": "news_article",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.cau.edu.cn/kxyj/index{page}.htm",
+              "page_start": 1,
+              "page_end": 3
+            },
+            "link_filter_pattern": "[a-f0-9]{32}\\.htm$"
+          }
+        },
+
+        {
+          "name": "关于我们",
+          "mode": "single",
+
+          "single": {
+            "url": "https://news.cau.edu.cn/xxgk/index.htm"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "FoodexWorld",
+
+      "sections": [
+        {
+          "name": "内部展会",
+          "mode": "list",
+          "prompt": "product_page",
+
+          "list": {
+            "pagination": {
+              "type": "js_pagination",
+              "url": "https://www.foodexworld.com/internalexpo",
+              "total_pages": 3,
+              "wait_for_first": "js:() => { const items = document.querySelectorAll('div.expo_box'); return items.length > 0; }",
+              "js_next_page": "(() => { const items = document.querySelectorAll('div.expo_box'); items.forEach(el => el.remove()); const btns = document.querySelectorAll('ul.pagination > li:not(.disabled)'); if (btns[{page}]) { btns[{page}].firstChild.click(); } })()",
+              "wait_for_next": "js:() => { const items = document.querySelectorAll('div.expo_box'); return items.length > 0; }"
+            },
+            "link_filter_pattern": "/expo/\\w+"
+          },
+
+          "crawler_config": {
+            "css_selector": "div.expo_index",
+            "wait_for": "js:() => { const items = document.querySelectorAll('div.expo_box'); return items.length > 0; }",
+            "content_filter_threshold": 0.8
+          }
+        }
+      ]
+    }
+  ]
+}

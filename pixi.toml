@@ -1,0 +1,24 @@
+[workspace]
+authors = ["unfazed <unfazed2049@gmail.com>"]
+channels = ["conda-forge"]
+name = "chuntianCrawl4ai"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[pypi-options]
+index-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+
+
+[tasks]
+prefect-serve="prefect server start"
+meilisearch-serve="meilisearch --db-path ./meilisearch_data --master-key=bT8kB0bK9iK0nF5x"
+
+[dependencies]
+python = "==3.12"
+pip = ">=26.0.1,<27"
+
+[pypi-dependencies]
+crawl4ai = ">=0.8.6, <0.9"
+prefect = ">=3.6.24, <4"
+meilisearch = ">=0.40.0, <0.41"
+redis = ">=5.2.1, <6"

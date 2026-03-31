@@ -1,0 +1,503 @@
+{
+  "workspace": "hpp",
+  "sites": [
+    {
+      "name": "食品伙伴网",
+
+      "sections": [
+        {
+          "name": "中国食品",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/guonei/list_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        },
+        {
+          "name": "权威发布",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/quanwei/list_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        },
+        {
+          "name": "国际食品",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/guoji/list_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        },
+        {
+          "name": "国际预警",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/yujing/list_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        },
+        {
+          "name": "食品科技",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/keji/list_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        },
+        {
+          "name": "外讯导读",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/daodu/list_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        },
+        {
+          "name": "产经企业",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/qiye/list_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        },
+        {
+          "name": "会展动态",
+          "mode": "list",
+          "data_type": "trade_show",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://news.foodmate.net/zhanhui/list_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "[0-9]{4}/[0-9]{2}/[0-9]+[.]html$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "foodtalks",
+
+      "sections": [
+        {
+          "name": "食品新闻",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodtalks.cn/news/foodnews?page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/[0-9]+$"
+          }
+        },
+
+        {
+          "name": "独家专栏",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodtalks.cn/news/exclusives?page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/[0-9]+$"
+          }
+        },
+
+        {
+          "name": "品类动态",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodtalks.cn/news/category?page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/[0-9]+$"
+          }
+        },
+
+        {
+          "name": "行业观点",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodtalks.cn/news/views?page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/[0-9]+$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "食品机械设备网",
+
+      "sections": [
+        {
+          "name": "市场分析",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodjx.com/news/t193/list_p{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/detail/[0-9]+[.]html$"
+          }
+        },
+
+        {
+          "name": "行业动态",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodjx.com/news/t3665/list_p{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/detail/[0-9]+[.]html$"
+          }
+        },
+
+        {
+          "name": "地方动态",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodjx.com/news/t9/list_p{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/detail/[0-9]+[.]html$"
+          }
+        },
+
+        {
+          "name": "政策法规",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodjx.com/news/t12/list_p{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/detail/[0-9]+[.]html$"
+          }
+        },
+
+        {
+          "name": "热点新闻",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodjx.com/news/t4296/list_p{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/detail/[0-9]+[.]html$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "中国食品报社中国安全食品网",
+
+      "sections": [
+        {
+          "name": "聚焦",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodscn.cn/jujiao/?p-{page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "jujiao/[0-9]+$"
+          }
+        },
+
+        {
+          "name": "监管",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodscn.cn/jianguan/?p-{page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "jianguan/[0-9]+$"
+          }
+        },
+
+        {
+          "name": "曝光",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodscn.cn/puguang/?p-{page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "puguang/[0-9]+$"
+          }
+        },
+
+        {
+          "name": "会展",
+          "mode": "list",
+          "data_type": "trade_show",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodscn.cn/huizhan/?p-{page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "huizhan/[0-9]+$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "每日食品",
+
+      "sections": [
+        {
+          "name": "快讯",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodaily.com/newsflashes?page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "newsflashes/[0-9]+$"
+          }
+        },
+
+        {
+          "name": "资讯",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodaily.com/articles?page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "articles/[0-9]+$"
+          }
+        },
+
+        {
+          "name": "参展资讯",
+          "mode": "list",
+          "data_type": "trade_show",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.foodaily.com/columns/13?page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "articles/[0-9]+$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "中国国际科学仪器及实验室装备展览会官网",
+
+      "sections": [
+        {
+          "name": "行业信息",
+          "mode": "list",
+          "data_type": "trade_show",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.cisile.com.cn/cnt_list_2_{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "newsflashes/[0-9]+$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "中国食品行业网",
+
+      "sections": [
+        {
+          "name": "国内展会",
+          "mode": "list",
+          "data_type": "trade_show",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "http://www.cnfood.net/exhibit/list.php?catid=546",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "exhibit/show.php?itemid=[0-9]+$"
+          }
+        },
+
+        {
+          "name": "国际展会",
+          "mode": "list",
+          "data_type": "trade_show",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "http://www.cnfood.net/exhibit/list.php?catid=547",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "exhibit/show.php?itemid=[0-9]+$"
+          }
+        },
+
+        {
+          "name": "国内资讯",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "http://www.cnfood.net/news/list.php?catid=548&page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/show.php?itemid=[0-9]+$"
+          }
+        },
+
+        {
+          "name": "活动动态",
+          "mode": "list",
+          "data_type": "industry_news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "http://www.cnfood.net/news/list.php?catid=835&page={page}",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/show.php?itemid=[0-9]+$"
+          }
+        }
+      ]
+    }
+  ]
+}
