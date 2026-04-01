@@ -6,9 +6,10 @@ Prefect Tasks for Crawl4ai
 import json
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import litellm
 from crawl4ai import (
@@ -273,7 +274,7 @@ def build_meta(site: dict, section: dict, workspace: str, url: str) -> dict:
         "section_name": section["name"],
         "data_type": section.get("data_type"),
         "url": url,
-        "crawled_at": datetime.now(timezone.utc).isoformat(),
+        "crawled_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(),
     }
 
 

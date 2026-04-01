@@ -1,6 +1,6 @@
 """
 Meilisearch indexing tasks and flow for Prefect
-将爬取的 cleaned_content 经 LLM 结构化后写入 Meilisearch 各 index
+将爬取的 raw_content 经 LLM 结构化后写入 Meilisearch 各 index
 """
 
 import hashlib
@@ -15,7 +15,6 @@ import meilisearch
 from prefect import flow, task
 
 from meilisearch_settings import ensure_hybrid_settings
-from markdown_cleaner import clean_markdown_content
 from utils import DEFAULT_WORKSPACE, OUTPUT_ROOT, load_prompts
 
 COMPETITOR_PROFILE_DTYPES = {"products", "cases", "solutions", "technologies"}
@@ -178,13 +177,12 @@ def index_competitor_news_task(
     llm_cfg: dict,
     prompts: dict,
     meta: dict,
-    cleaned_content: str,
     raw_content: str,
 ):
     """LLM 提取字段后写入 competitor_news"""
     system_prompt = prompts[_PROMPT_KEY["news"]]["instruction"]
     try:
-        extracted = call_llm(llm_cfg, system_prompt, cleaned_content)
+        extracted = call_llm(llm_cfg, system_prompt, raw_content)
     except Exception as e:
         print(f"  [警告] LLM 提取失败 [{meta['url']}]: {e}")
         return
@@ -210,13 +208,12 @@ def index_industry_news_task(
     llm_cfg: dict,
     prompts: dict,
     meta: dict,
-    cleaned_content: str,
     raw_content: str,
 ):
     """LLM 提取字段后写入 industry_news"""
     system_prompt = prompts[_PROMPT_KEY["industry_news"]]["instruction"]
     try:
-        extracted = call_llm(llm_cfg, system_prompt, cleaned_content)
+        extracted = call_llm(llm_cfg, system_prompt, raw_content)
     except Exception as e:
         print(f"  [警告] LLM 提取失败 [{meta['url']}]: {e}")
         return
@@ -239,13 +236,12 @@ def index_trade_show_task(
     llm_cfg: dict,
     prompts: dict,
     meta: dict,
-    cleaned_content: str,
     raw_content: str,
 ):
     """LLM 提取字段后写入 trade_shows"""
     system_prompt = prompts[_PROMPT_KEY["trade_show"]]["instruction"]
     try:
-        extracted = call_llm(llm_cfg, system_prompt, cleaned_content)
+        extracted = call_llm(llm_cfg, system_prompt, raw_content)
     except Exception as e:
         print(f"  [警告] LLM 提取失败 [{meta['url']}]: {e}")
         return
@@ -370,7 +366,7 @@ def index_workspace_flow(
 ):
     """
     扫描 output/{workspace}/{date}/ 下所有 .json sidecar，
-    以 cleaned_content 为输入，经 LLM 结构化后写入对应 Meilisearch index。
+    以 raw_content 为输入，经 LLM 结构化后写入对应 Meilisearch index。
     date 默认为今天（格式 YYYYMMDD）。
     """
     from datetime import date as date_cls
@@ -390,7 +386,7 @@ def index_workspace_flow(
     prompts = load_prompts()
 
     # 按 competitor_id 归集 profile 类数据
-    # {competitor_id: {"site_name": str, "items": [{"data_type":..., "url":..., "cleaned_content":..., "raw_content":...}]}}
+    # {competitor_id: {"site_name": str, "items": [{"data_type":..., "url":..., "raw_content":...}]}}
     profiles: dict = defaultdict(lambda: {"site_name": "", "items": []})
 
     json_files = _collect_json_sidecars(workspace, date, json_paths)
@@ -406,7 +402,6 @@ def index_workspace_flow(
 
         meta = payload.get("meta", {})
         raw_content = payload.get("raw_content", "")
-        # cleaned_content = payload.get("cleaned_content", "")
         data_type = meta.get("data_type")
         competitor_id = meta.get("competitor_id")
 
@@ -414,10 +409,7 @@ def index_workspace_flow(
             print(f"  [跳过] raw_content 为空: {jf.name}")
             continue
 
-        # if not cleaned_content:
-        #     cleaned_content = clean_markdown_content(raw_content)
-
-        # keep, reason = pre_index_filter_task(llm_config, prompts, meta, cleaned_content)
+        # keep, reason = pre_index_filter_task(llm_config, prompts, meta, raw_content)
         # if not keep:
         #     print(f"  [过滤] 跳过 {jf.name}: {reason}")
         #     continue
@@ -429,25 +421,18 @@ def index_workspace_flow(
                 {
                     "data_type": data_type,
                     "url": meta["url"],
-                    # "cleaned_content": cleaned_content,
                     "raw_content": raw_content,
                 }
             )
 
         elif data_type == "news" and competitor_id:
-            index_competitor_news_task(
-                client, llm_config, prompts, meta, raw_content
-            )
+            index_competitor_news_task(client, llm_config, prompts, meta, raw_content)
 
         elif data_type == "industry_news":
-            index_industry_news_task(
-                client, llm_config, prompts, meta, raw_content
-            )
+            index_industry_news_task(client, llm_config, prompts, meta, raw_content)
 
         elif data_type == "trade_show":
-            index_trade_show_task(
-                client, llm_config, prompts, meta, raw_content
-            )
+            index_trade_show_task(client, llm_config, prompts, meta, raw_content)
 
         else:
             print(f"  [跳过] data_type={data_type!r}, file={jf.name}")

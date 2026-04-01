@@ -3,6 +3,7 @@ Meilisearch 客户端封装
 """
 
 from meilisearch import Client
+from meilisearch.errors import MeilisearchApiError
 from server.config import MEILISEARCH_CONFIG
 from typing import Any, Optional
 
@@ -79,5 +80,16 @@ async def hybrid_search(
         }
 
     # 执行搜索
-    result = index.search(query, search_params)
+    try:
+        result = index.search(query, search_params)
+    except MeilisearchApiError as e:
+        if e.status_code == 404:
+            return {
+                "hits": [],
+                "estimatedTotalHits": 0,
+                "limit": limit,
+                "offset": offset,
+                "processingTimeMs": 0,
+            }
+        raise
     return result

@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+import inspect
 from pathlib import Path
 from unittest.mock import patch
 
@@ -74,6 +75,16 @@ class MeilisearchIndexInputTests(unittest.TestCase):
 
         self.assertFalse(keep)
         self.assertEqual(reason, "广告页")
+
+    def test_index_tasks_accept_raw_content_only(self):
+        for task_obj in (
+            meilisearch_tasks.index_competitor_news_task,
+            meilisearch_tasks.index_industry_news_task,
+            meilisearch_tasks.index_trade_show_task,
+        ):
+            params = inspect.signature(task_obj.fn).parameters
+            self.assertIn("raw_content", params)
+            self.assertNotIn("cleaned_content", params)
 
 
 if __name__ == "__main__":
