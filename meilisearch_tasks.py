@@ -197,7 +197,6 @@ def index_competitor_news_task(
         "url": meta["url"],
         "crawled_at": meta["crawled_at"],
         "source_section": meta["section_name"],
-        "cleaned_content": cleaned_content,
         "raw_content": raw_content,
         **extracted,
     }
@@ -227,7 +226,6 @@ def index_industry_news_task(
         "workspace": meta["workspace"],
         "url": meta["url"],
         "crawled_at": meta["crawled_at"],
-        "cleaned_content": cleaned_content,
         "raw_content": raw_content,
         **extracted,
     }
@@ -258,7 +256,6 @@ def index_trade_show_task(
         "id": _url_hash(f"{name}{year}"),
         "workspace": meta["workspace"],
         "crawled_at": meta["crawled_at"],
-        "cleaned_content": cleaned_content,
         "raw_content": raw_content,
         **extracted,
     }
@@ -409,20 +406,21 @@ def index_workspace_flow(
 
         meta = payload.get("meta", {})
         raw_content = payload.get("raw_content", "")
-        cleaned_content = payload.get("cleaned_content", "")
+        # cleaned_content = payload.get("cleaned_content", "")
         data_type = meta.get("data_type")
         competitor_id = meta.get("competitor_id")
 
         if not raw_content:
             print(f"  [跳过] raw_content 为空: {jf.name}")
             continue
-        if not cleaned_content:
-            cleaned_content = clean_markdown_content(raw_content)
 
-        keep, reason = pre_index_filter_task(llm_config, prompts, meta, cleaned_content)
-        if not keep:
-            print(f"  [过滤] 跳过 {jf.name}: {reason}")
-            continue
+        # if not cleaned_content:
+        #     cleaned_content = clean_markdown_content(raw_content)
+
+        # keep, reason = pre_index_filter_task(llm_config, prompts, meta, cleaned_content)
+        # if not keep:
+        #     print(f"  [过滤] 跳过 {jf.name}: {reason}")
+        #     continue
 
         if data_type in COMPETITOR_PROFILE_DTYPES and competitor_id:
             if not profiles[competitor_id]["site_name"]:
@@ -431,24 +429,24 @@ def index_workspace_flow(
                 {
                     "data_type": data_type,
                     "url": meta["url"],
-                    "cleaned_content": cleaned_content,
+                    # "cleaned_content": cleaned_content,
                     "raw_content": raw_content,
                 }
             )
 
         elif data_type == "news" and competitor_id:
             index_competitor_news_task(
-                client, llm_config, prompts, meta, cleaned_content, raw_content
+                client, llm_config, prompts, meta, raw_content
             )
 
         elif data_type == "industry_news":
             index_industry_news_task(
-                client, llm_config, prompts, meta, cleaned_content, raw_content
+                client, llm_config, prompts, meta, raw_content
             )
 
         elif data_type == "trade_show":
             index_trade_show_task(
-                client, llm_config, prompts, meta, cleaned_content, raw_content
+                client, llm_config, prompts, meta, raw_content
             )
 
         else:

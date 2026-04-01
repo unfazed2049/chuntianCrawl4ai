@@ -18,6 +18,11 @@ class BuildCrawlerRunConfigTests(unittest.TestCase):
         self.assertEqual(cfg.wait_for, "css:.list-item")
         self.assertIsNone(getattr(cfg, "extraction_strategy", None))
 
+    def test_build_uses_cleaned_html_markdown_source(self):
+        cfg = build_crawler_run_config({})
+
+        self.assertEqual(cfg.markdown_generator.content_source, "cleaned_html")
+
 
 class TaskCachePolicyTests(unittest.TestCase):
     def test_crawler_tasks_use_no_cache_policy(self):

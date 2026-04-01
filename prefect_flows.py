@@ -17,6 +17,7 @@ from prefect_tasks import (
     build_llm_strategy,
     build_meta,
     build_output_dir,
+    clean_markdown_with_llm_task,
     collect_urls_js_pagination_task,
     collect_urls_url_template_task,
     crawl_detail_pages_task,
@@ -124,12 +125,14 @@ async def run_list_section_flow(
         extracted = parse_extracted(result["extracted_content"])
         fallback = pick_markdown_content(result["markdown"])
         slug = slug_from_url(result["url"])
+        meta = build_meta(site, section, workspace, result["url"])
+        cleaned_content = clean_markdown_with_llm_task(llm_cfg, prompts, meta, fallback)
         json_path = save_json_task(
             output_dir,
             slug,
             extracted,
-            fallback,
-            build_meta(site, section, workspace, result["url"]),
+            cleaned_content,
+            meta,
         )
         print(f"    已保存: {json_path}")
         saved += 1
@@ -183,11 +186,11 @@ async def run_single_section_flow(
     extracted = parse_extracted(result["extracted_content"])
     fallback = pick_markdown_content(result["markdown"])
     slug = slug_from_url(url)
+    meta = build_meta(site, section, workspace, url)
+    cleaned_content = clean_markdown_with_llm_task(llm_cfg, prompts, meta, fallback)
 
     output_dir = build_output_dir(site, section, workspace)
-    json_path = save_json_task(
-        output_dir, slug, extracted, fallback, build_meta(site, section, workspace, url)
-    )
+    json_path = save_json_task(output_dir, slug, extracted, cleaned_content, meta)
     print(f"  完成 -> {json_path}")
     return [json_path]
 

@@ -22,7 +22,7 @@ class ArticleData(BaseModel):
 # 配置
 BASE_URL = "https://news.cau.edu.cn/kxyj"
 LIST_URL_TEMPLATE = "https://news.cau.edu.cn/kxyj/index{page}.htm"
-TOTAL_PAGES = 3
+TOTAL_PAGES = 1
 OUTPUT_DIR = Path("output/中国农业大学/科学研究")
 
 # 匹配详情页 URL 的正则：href="32位hex.htm"，相对路径
@@ -81,10 +81,14 @@ async def fetch_detail_pages(crawler: AsyncWebCrawler, urls: list[str]) -> list[
 
     run_config = CrawlerRunConfig(
         # extraction_strategy=JsonCssExtractionStrategy(schema),
-        extraction_strategy = llm_strategy,
+        # extraction_strategy = llm_strategy,
         cache_mode=CacheMode.BYPASS,
         markdown_generator=DefaultMarkdownGenerator(
-            content_filter=PruningContentFilter(threshold=0.5),
+            content_filter=PruningContentFilter(threshold=0.4),
+            options = {
+                "ignore_links": False,
+                "ignore_images": False
+            }
         ),
     )
 
@@ -97,35 +101,40 @@ async def fetch_detail_pages(crawler: AsyncWebCrawler, urls: list[str]) -> list[
             print(f"  [警告] 详情页爬取失败: {result.url} - {result.error_message}")
             continue
 
-        # 提取 CSS 结构化字段
-        title = ""
-        date = ""
-        try:
-            data = json.loads(result.extracted_content or "[]")
-            if data:
-                title = data[0].get("title", "").strip()
-                date = data[0].get("date", "").strip()
-                content = data[0].get("content", "").strip()
-        except (json.JSONDecodeError, IndexError):
-            pass
+        # # 提取 CSS 结构化字段
+        # title = ""
+        # date = ""
+        # try:
+        #     data = json.loads(result.extracted_content or "[]")
+        #     if data:
+        #         title = data[0].get("title", "").strip()
+        #         date = data[0].get("date", "").strip()
+        #         content = data[0].get("content", "").strip()
+        # except (json.JSONDecodeError, IndexError):
+        #     pass
 
         # URL 中的 hash 作为 fallback 文件名
         url_hash = result.url.split("/")[-1].replace(".htm", "")
 
-         # 优先用 fit_markdown，fallback 到 raw_markdown
-        if not content:
-            content = result.markdown.fit_markdown or result.markdown.raw_markdown or ""
 
+        print(result.markdown.cleaned_html)
+
+
+         # 优先用 fit_markdown，fallback 到 raw_markdown
+        # if not content:
+            # content = result.markdown.fit_markdown or result.markdown.raw_markdown or ""
+
+        content = result.markdown.fit_markdown or result.markdown.raw_markdown or ""
         items.append(
             {
                 "url": result.url,
-                "title": title,
-                "date": date,
+                # "title": title,
+                # "date": date,
                 "content": content,
                 "url_hash": url_hash,
             }
         )
-        print(f"  ✅ {title or url_hash} ({date})")
+        print(f"  ✅ {url_hash} ({date})")
 
     return items
 

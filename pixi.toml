@@ -13,7 +13,6 @@ index-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
 prefect-serve="prefect server start"
 meilisearch-serve="meilisearch --db-path ./meilisearch_data --master-key=bT8kB0bK9iK0nF5x"
 api-serve="uvicorn server.main:app --reload --host 0.0.0.0 --port 8000"
-api-serve="uvicorn server.main:app --reload --host 0.0.0.0 --port 8000"
 
 [dependencies]
 python = "==3.12"

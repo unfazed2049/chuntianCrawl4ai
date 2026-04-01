@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import litellm
 from crawl4ai import (
     AsyncWebCrawler,
     CacheMode,
@@ -144,7 +145,9 @@ def build_crawler_run_config(
     run_cfg = {
         "cache_mode": CacheMode.BYPASS,
         "markdown_generator": DefaultMarkdownGenerator(
+            content_source="cleaned_html",
             content_filter=PruningContentFilter(threshold=threshold),
+            options={"ignore_links": True, "ignore_images": False},
         ),
         **merged,
     }
@@ -165,6 +168,63 @@ def parse_extracted(raw: str) -> dict:
     except (json.JSONDecodeError, IndexError):
         pass
     return {}
+
+
+def _strip_markdown_fences(text: str) -> str:
+    stripped = text.strip()
+    if not stripped.startswith("```"):
+        return stripped
+    lines = stripped.splitlines()
+    if len(lines) >= 2 and lines[0].startswith("```") and lines[-1].strip() == "```":
+        return "\n".join(lines[1:-1]).strip()
+    return stripped
+
+
+@task(name="clean_markdown_with_llm", tags=["llm", "clean"], cache_policy=NO_CACHE)
+def clean_markdown_with_llm_task(
+    llm_cfg: dict,
+    prompts: dict,
+    meta: dict,
+    raw_content: str,
+) -> str:
+    if not raw_content:
+        return ""
+
+    prompt_cfg = prompts.get("clean_markdown", {})
+    system_prompt = prompt_cfg.get("instruction", "").strip()
+    if not system_prompt:
+        return raw_content
+
+    user_content = json.dumps(
+        {
+            "meta": {
+                "url": meta.get("url", ""),
+                "site_name": meta.get("site_name", ""),
+                "section_name": meta.get("section_name", ""),
+                "data_type": meta.get("data_type"),
+            },
+            "raw_content": raw_content,
+        },
+        ensure_ascii=False,
+    )
+
+    try:
+        response = litellm.completion(
+            model=llm_cfg["provider"],
+            api_key=llm_cfg["api_token"],
+            api_base=llm_cfg.get("base_url"),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            temperature=0,
+        )
+        text = response.choices[0].message.content or ""
+        cleaned = _strip_markdown_fences(text)
+        return cleaned or raw_content
+    except Exception as e:
+        print(f"  [警告] LLM 清洗失败 [{meta.get('url', '')}]: {e}")
+        return raw_content
 
 
 def filter_links(links: list[dict], pattern: str | None) -> list[str]:
