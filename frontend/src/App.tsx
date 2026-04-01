@@ -15,7 +15,7 @@ function App() {
     <BrowserRouter>
       <Layout className="app-layout">
         <Header />
-        <Layout>
+        <Layout className="app-main-layout">
           <Sidebar />
           <Content className="app-content">
             <Routes>
