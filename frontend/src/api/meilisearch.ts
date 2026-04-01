@@ -27,7 +27,7 @@ export async function hybridSearch<T>(
   indexName: string,
   params: SearchParams
 ) {
-  const response: any = await apiClient.get('/search', {
+  const response = await apiClient.get('/search', {
     params: {
       index: indexName,
       q: params.query || '',
@@ -38,7 +38,7 @@ export async function hybridSearch<T>(
     },
   });
   
-  return response.data;
+  return response as unknown as { hits: T[]; estimatedTotalHits?: number };
 }
 
 // 获取竞争对手列表

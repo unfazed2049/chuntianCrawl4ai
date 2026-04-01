@@ -56,4 +56,5 @@ export interface SearchParams {
   limit?: number;
   offset?: number;
   filter?: string;
+  workspace?: string;
 }
