@@ -125,6 +125,17 @@ def _ensure_hybrid_search_if_configured(client: meilisearch.Client, meili_config
         index_uids=index_uids,
         embedder_name=embedder_name,
         embedder_settings=embedder_settings,
+        filterable_attrs=[
+            "workspace",
+            "category",
+            "competitor_id",
+            "competitor_name",
+            "source_section",
+            "year",
+            "month",
+            "name",
+            "country",
+        ],
     )
     print(f"  [index] hybrid settings updated for {len(index_uids)} indexes")
 
@@ -221,6 +232,7 @@ def index_industry_news_task(
     doc = {
         "id": _url_hash(meta["url"]),
         "workspace": meta["workspace"],
+        "site_name": meta.get("site_name", ""),
         "url": meta["url"],
         "crawled_at": meta["crawled_at"],
         "raw_content": raw_content,

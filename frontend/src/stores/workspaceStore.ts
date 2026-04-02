@@ -9,11 +9,22 @@ interface WorkspaceState {
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
-      currentWorkspace: 'default',
-      setWorkspace: (workspace) => set({ currentWorkspace: workspace }),
+      currentWorkspace: 'hpp',
+      setWorkspace: (workspace) => set({ currentWorkspace: workspace || 'hpp' }),
     }),
     {
       name: 'workspace-storage',
+      merge: (persistedState, currentState) => {
+        const persistedWorkspace = (persistedState as Partial<WorkspaceState> | undefined)?.currentWorkspace;
+
+        return {
+          ...currentState,
+          ...(persistedState as Partial<WorkspaceState> | undefined),
+          currentWorkspace: persistedWorkspace && persistedWorkspace !== 'default'
+            ? persistedWorkspace
+            : currentState.currentWorkspace,
+        };
+      },
     }
   )
 );

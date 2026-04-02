@@ -442,11 +442,11 @@
           "list": {
             "pagination": {
               "type": "url_template",
-              "url_template": "http://www.cnfood.net/exhibit/list.php?catid=546",
+              "url_template": "http://www.cnfood.net/exhibit/list.php?catid=546&page={page}",
               "page_start": 1,
               "page_end": 1
             },
-            "link_filter_pattern": "exhibit/show.php?itemid=[0-9]+$"
+            "link_filter_pattern": "exhibit/show\\.php\\?itemid=[0-9]+$"
           }
         },
 
@@ -458,11 +458,11 @@
           "list": {
             "pagination": {
               "type": "url_template",
-              "url_template": "http://www.cnfood.net/exhibit/list.php?catid=547",
+              "url_template": "http://www.cnfood.net/exhibit/list.php?catid=547&page={page}",
               "page_start": 1,
               "page_end": 1
             },
-            "link_filter_pattern": "exhibit/show.php?itemid=[0-9]+$"
+            "link_filter_pattern": "exhibit/show\\.php\\?itemid=[0-9]+$"
           }
         },
 
@@ -478,7 +478,7 @@
               "page_start": 1,
               "page_end": 1
             },
-            "link_filter_pattern": "news/show.php?itemid=[0-9]+$"
+            "link_filter_pattern": "news/show\\.php\\?itemid=[0-9]+$"
           }
         },
 
@@ -494,7 +494,7 @@
               "page_start": 1,
               "page_end": 1
             },
-            "link_filter_pattern": "news/show.php?itemid=[0-9]+$"
+            "link_filter_pattern": "news/show\\.php\\?itemid=[0-9]+$"
           }
         }
       ]

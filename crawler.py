@@ -9,6 +9,7 @@ import json
 import re
 import sys
 import uuid
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -54,10 +55,11 @@ def sanitize_filename(name: str, fallback: str = "untitled") -> str:
 
 
 def slug_from_url(url: str) -> str:
-    """从 URL 末尾提取 slug 作为文件名（去掉扩展名）"""
-    part = url.rstrip("/").split("/")[-1]
-    stem = part.rsplit(".", 1)[0] if "." in part else part
-    return stem or sanitize_filename("", "page")
+    """使用完整 URL 的哈希值作为 slug，避免同路径不同 query 冲突"""
+    value = (url or "").strip()
+    if not value:
+        return sanitize_filename("", "page")
+    return hashlib.md5(value.encode("utf-8")).hexdigest()
 
 
 def build_output_dir(site: dict, section: dict, workspace: str) -> Path:

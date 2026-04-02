@@ -6,6 +6,9 @@ FastAPI 主应用
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from server.routes import search, competitors, industry_news, trade_shows, workspaces
+from server.utils.meilisearch_client import (
+    ensure_filterable_attributes_for_known_indexes,
+)
 
 app = FastAPI(
     title="Crawl4AI Data API",
@@ -33,6 +36,14 @@ app.include_router(competitors.router, prefix="/api/competitors", tags=["竞争�
 app.include_router(industry_news.router, prefix="/api/industry-news", tags=["行业新闻"])
 app.include_router(trade_shows.router, prefix="/api/trade-shows", tags=["展会信息"])
 app.include_router(workspaces.router, prefix="/api/workspaces", tags=["工作空间"])
+
+
+@app.on_event("startup")
+async def bootstrap_meilisearch_settings():
+    try:
+        ensure_filterable_attributes_for_known_indexes()
+    except Exception as error:
+        print(f"[warn] failed to bootstrap meilisearch filter settings: {error}")
 
 
 @app.get("/")

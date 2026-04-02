@@ -8,6 +8,19 @@ from server.config import MEILISEARCH_CONFIG
 from typing import Any, Optional
 
 
+FILTERABLE_ATTRIBUTES_BY_INDEX: dict[str, list[str]] = {
+    "industry_news": ["workspace", "category"],
+    "competitor_news": [
+        "workspace",
+        "competitor_id",
+        "competitor_name",
+        "source_section",
+    ],
+    "trade_shows": ["workspace", "year", "month", "name"],
+    "competitor_profiles": ["workspace", "competitor_id", "country", "name"],
+}
+
+
 class MeilisearchClient:
     """Meilisearch 客户端单例"""
 
@@ -26,6 +39,48 @@ class MeilisearchClient:
 def get_meilisearch_client() -> Client:
     """依赖注入函数"""
     return MeilisearchClient.get_client()
+
+
+def _wait_for_settings_task(client: Any, task_result: Any) -> None:
+    task_uid = None
+    if isinstance(task_result, dict):
+        task_uid = task_result.get("taskUid") or task_result.get("uid")
+
+    if task_uid is not None and hasattr(client, "wait_for_task"):
+        client.wait_for_task(task_uid, timeout_in_ms=5000)
+
+
+def _repair_filterable_attributes(client: Any, index_name: str, index: Any) -> bool:
+    filterable_attributes = FILTERABLE_ATTRIBUTES_BY_INDEX.get(index_name)
+    if not filterable_attributes:
+        return False
+
+    task_result = index.update_settings({"filterableAttributes": filterable_attributes})
+    _wait_for_settings_task(client, task_result)
+    return True
+
+
+def _is_invalid_filter_error(error: MeilisearchApiError) -> bool:
+    error_text = str(error)
+    return error.status_code == 400 and (
+        "invalid_search_filter" in error_text or "not filterable" in error_text
+    )
+
+
+def ensure_filterable_attributes_for_known_indexes() -> None:
+    client = get_meilisearch_client()
+
+    for index_name, filterable_attributes in FILTERABLE_ATTRIBUTES_BY_INDEX.items():
+        try:
+            index = client.index(index_name)
+            task_result = index.update_settings(
+                {"filterableAttributes": filterable_attributes}
+            )
+            _wait_for_settings_task(client, task_result)
+        except MeilisearchApiError as error:
+            if error.status_code == 404:
+                continue
+            raise
 
 
 async def hybrid_search(
@@ -91,5 +146,12 @@ async def hybrid_search(
                 "offset": offset,
                 "processingTimeMs": 0,
             }
+
+        if search_params.get("filter") and _is_invalid_filter_error(e):
+            repaired = _repair_filterable_attributes(client, index_name, index)
+            if repaired:
+                result = index.search(query, search_params)
+                return result
+
         raise
     return result

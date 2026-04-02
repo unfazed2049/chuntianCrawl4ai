@@ -1,30 +1,30 @@
-import { useEffect, useMemo, useState } from 'react';
-import { CalendarRange, Clock3, ExternalLink, Sparkles } from 'lucide-react';
-import dayjs from 'dayjs';
-import ReactMarkdown from 'react-markdown';
-import { hybridSearch } from '../../api/meilisearch';
-import { Badge } from '../../components/ui/badge';
-import { ContentCard } from '../../components/ui/content-card';
-import { EmptyState } from '../../components/ui/empty-state';
-import { PageHeader } from '../../components/ui/page-header';
-import { Skeleton } from '../../components/ui/skeleton';
-import { StatCard } from '../../components/ui/stat-card';
-import { useWorkspaceStore } from '../../stores/workspaceStore';
-import type { TradeShow } from '../../types';
+import { useEffect, useMemo, useState } from "react";
+import { CalendarRange, Clock3, ExternalLink, Sparkles } from "lucide-react";
+import dayjs from "dayjs";
+import ReactMarkdown from "react-markdown";
+import { hybridSearch } from "../../api/meilisearch";
+import { Badge } from "../../components/ui/badge";
+import { ContentCard } from "../../components/ui/content-card";
+import { EmptyState } from "../../components/ui/empty-state";
+import { PageHeader } from "../../components/ui/page-header";
+import { Skeleton } from "../../components/ui/skeleton";
+import { useWorkspaceStore } from "../../stores/workspaceStore";
+import type { TradeShow } from "../../types";
 
-const DATE_FORMATTER = new Intl.DateTimeFormat('zh-CN', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
+const DATE_FORMATTER = new Intl.DateTimeFormat("zh-CN", {
+  dateStyle: "medium",
+  timeStyle: "short",
 });
 
 function getShowSummary(show: TradeShow) {
-  const text = show.cleaned_content?.trim() || show.raw_content?.trim() || '暂无摘要。';
+  const text =
+    show.cleaned_content?.trim() || show.raw_content?.trim() || "暂无摘要。";
   return text.length > 260 ? `${text.slice(0, 260)}…` : text;
 }
 
 function getShowLink(show: TradeShow) {
   const candidate = [show.url, show.website, show.link].find(
-    (value) => typeof value === 'string' && value.trim().length > 0
+    (value) => typeof value === "string" && value.trim().length > 0,
   );
 
   return candidate ?? null;
@@ -32,10 +32,10 @@ function getShowLink(show: TradeShow) {
 
 function getShowLocation(show: TradeShow) {
   const candidate = [show.location, show.city, show.country, show.venue].find(
-    (value) => typeof value === 'string' && value.trim().length > 0
+    (value) => typeof value === "string" && value.trim().length > 0,
   );
 
-  return candidate ?? '地点待补充';
+  return candidate ?? "地点待补充";
 }
 
 function MonthSkeleton() {
@@ -56,7 +56,9 @@ function MonthSkeleton() {
 
 export default function TradeShowsPage() {
   const { currentWorkspace } = useWorkspaceStore();
-  const [groupedShows, setGroupedShows] = useState<Record<string, TradeShow[]>>({});
+  const [groupedShows, setGroupedShows] = useState<Record<string, TradeShow[]>>(
+    {},
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -67,30 +69,34 @@ export default function TradeShowsPage() {
     setLoading(true);
 
     try {
-      const result = await hybridSearch<TradeShow>('trade_shows', {
-        query: '',
-        filter: `workspace = "${currentWorkspace}"`,
-        limit: 200,
+      const result = await hybridSearch<TradeShow>("trade_shows", {
+        query: "",
+        workspace: currentWorkspace,
+        limit: 100,
       });
 
       const sorted = result.hits.toSorted(
-        (a, b) => new Date(b.crawled_at).getTime() - new Date(a.crawled_at).getTime()
+        (a, b) =>
+          new Date(b.crawled_at).getTime() - new Date(a.crawled_at).getTime(),
       );
 
-      const grouped = sorted.reduce<Record<string, TradeShow[]>>((accumulator, show) => {
-        const monthKey = dayjs(show.crawled_at).format('YYYY-MM');
+      const grouped = sorted.reduce<Record<string, TradeShow[]>>(
+        (accumulator, show) => {
+          const monthKey = dayjs(show.crawled_at).format("YYYY-MM");
 
-        if (!accumulator[monthKey]) {
-          accumulator[monthKey] = [];
-        }
+          if (!accumulator[monthKey]) {
+            accumulator[monthKey] = [];
+          }
 
-        accumulator[monthKey].push(show);
-        return accumulator;
-      }, {});
+          accumulator[monthKey].push(show);
+          return accumulator;
+        },
+        {},
+      );
 
       setGroupedShows(grouped);
     } catch (error) {
-      console.error('加载展会信息失败:', error);
+      console.error("加载展会信息失败:", error);
       setGroupedShows({});
     } finally {
       setLoading(false);
@@ -99,12 +105,7 @@ export default function TradeShowsPage() {
 
   const monthKeys = useMemo(
     () => Object.keys(groupedShows).toSorted((a, b) => b.localeCompare(a)),
-    [groupedShows]
-  );
-
-  const totalShows = useMemo(
-    () => Object.values(groupedShows).reduce((sum, shows) => sum + shows.length, 0),
-    [groupedShows]
+    [groupedShows],
   );
 
   return (
@@ -112,15 +113,8 @@ export default function TradeShowsPage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <PageHeader
           eyebrow="Trade Shows"
-          title="用时间线方式整理会展曝光与行业节点"
-          description="按月聚合展会信息，保留摘要、时间和扩展链接，让会展动态从“数据列表”变成更易浏览的市场事件流。"
-          stats={(
-            <>
-              <StatCard label="Workspace" value={currentWorkspace} />
-              <StatCard label="Months" value={monthKeys.length} />
-              <StatCard label="Shows" value={totalShows} />
-            </>
-          )}
+          title="展会信息"
+          description="按时间整理会展节点与市场曝光"
         />
 
         {loading ? (
@@ -140,9 +134,11 @@ export default function TradeShowsPage() {
               <div className="flex items-center justify-between px-1">
                 <div>
                   <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
-                    {dayjs(monthKey).format('YYYY 年 MM 月')}
+                    {dayjs(monthKey).format("YYYY 年 MM 月")}
                   </h3>
-                  <p className="mt-1 text-sm text-slate-500">{groupedShows[monthKey].length} 个展会节点</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {groupedShows[monthKey].length} 个展会节点
+                  </p>
                 </div>
                 <Badge>{monthKey}</Badge>
               </div>
@@ -154,25 +150,38 @@ export default function TradeShowsPage() {
                   return (
                     <ContentCard
                       key={show.id}
-                      topBar={(
+                      topBar={
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge className="bg-amber-50 text-amber-700">{show.year}</Badge>
-                          <Badge className="bg-slate-100 text-slate-700">{getShowLocation(show)}</Badge>
+                          <Badge className="bg-amber-50 text-amber-700">
+                            {show.year}
+                          </Badge>
+                          <Badge className="bg-slate-100 text-slate-700">
+                            {getShowLocation(show)}
+                          </Badge>
                         </div>
-                      )}
-                      action={showLink ? (
-                        <a
-                          href={showLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-[border-color,background-color,color] hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-                        >
-                          查看链接
-                          <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                        </a>
-                      ) : null}
-                      title={<h4 className="text-balance text-2xl font-semibold tracking-tight text-slate-950">{show.name}</h4>}
-                      meta={(
+                      }
+                      action={
+                        showLink ? (
+                          <a
+                            href={showLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-[border-color,background-color,color] hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+                          >
+                            查看链接
+                            <ExternalLink
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            />
+                          </a>
+                        ) : null
+                      }
+                      title={
+                        <h4 className="text-balance text-2xl font-semibold tracking-tight text-slate-950">
+                          {show.name}
+                        </h4>
+                      }
+                      meta={
                         <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
                           <span className="inline-flex items-center gap-2">
                             <Clock3 className="h-4 w-4" aria-hidden="true" />
@@ -180,13 +189,18 @@ export default function TradeShowsPage() {
                           </span>
                           {show.month ? (
                             <span className="inline-flex items-center gap-2">
-                              <Sparkles className="h-4 w-4" aria-hidden="true" />
+                              <Sparkles
+                                className="h-4 w-4"
+                                aria-hidden="true"
+                              />
                               {show.month} 月事件
                             </span>
                           ) : null}
                         </div>
-                      )}
-                      content={<ReactMarkdown>{getShowSummary(show)}</ReactMarkdown>}
+                      }
+                      content={
+                        <ReactMarkdown>{getShowSummary(show)}</ReactMarkdown>
+                      }
                     />
                   );
                 })}

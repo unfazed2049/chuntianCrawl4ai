@@ -1,0 +1,21 @@
+{
+  "workspace": "hpp",
+  "sites": [
+    {
+      "name": "山西海普瑞科技有限公司",
+      "competitor_id": "山西海普瑞科技有限公司",
+
+      "sections": [
+        {
+          "name": "HPP应用",
+          "mode": "list",
+          "data_type": "cases",
+
+          "list": {
+            "link_filter_pattern": "info/[0-9]+\\.html$"
+          }
+        }
+      ]
+    }
+  ]
+}

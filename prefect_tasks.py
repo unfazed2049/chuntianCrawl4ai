@@ -6,6 +6,7 @@ Prefect Tasks for Crawl4ai
 import json
 import re
 import uuid
+import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -76,10 +77,11 @@ def sanitize_filename(name: str, fallback: str = "untitled") -> str:
 
 
 def slug_from_url(url: str) -> str:
-    """从 URL 末尾提取 slug 作为文件名（去掉扩展名）"""
-    part = url.rstrip("/").split("/")[-1]
-    stem = part.rsplit(".", 1)[0] if "." in part else part
-    return stem or sanitize_filename("", "page")
+    """使用完整 URL 的哈希值作为 slug，避免同路径不同 query 冲突"""
+    value = (url or "").strip()
+    if not value:
+        return sanitize_filename("", "page")
+    return hashlib.md5(value.encode("utf-8")).hexdigest()
 
 
 def build_output_dir(
@@ -326,7 +328,9 @@ async def collect_urls_url_template_task(
         new = [u for u in filtered if u not in seen]
         seen.update(new)
         all_urls.extend(new)
-        print(f"  列表页 {page}: 找到 {len(filtered)} 个链接（新增 {len(new)}）")
+        print(
+            f"  列表页 {page}: 找到 {len(internal)} 个链接, 过滤出 {len(filtered)} 个链接（新增 {len(new)}）"
+        )
 
     return all_urls
 
