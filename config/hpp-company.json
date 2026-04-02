@@ -7,15 +7,298 @@
 
       "sections": [
         {
+          "name": "HPP技术",
+          "mode": "list",
+          "data_type": "technologies",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "http://hypree.com/info/68832.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "info/[0-9]+\\.html$"
+          }
+        },
+
+        {
           "name": "HPP应用",
           "mode": "list",
           "data_type": "cases",
 
           "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "http://hypree.com/info/68870.html",
+              "page_start": 1,
+              "page_end": 1
+            },
             "link_filter_pattern": "info/[0-9]+\\.html$"
           }
         }
       ]
+    },
+
+    {
+      "name": "力德福",
+      "competitor_id": "力德福",
+
+      "sections": [
+        {
+          "name": "超高压力HPP设备",
+          "mode": "list",
+          "data_type": "products",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.ldfuhp.com/list/94.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "article/[0-9]+/cid/[0-9]+\\.html$"
+          }
+        },
+
+        {
+          "name": "HPP技术",
+          "mode": "list",
+          "data_type": "technologies",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.ldfuhp.com/page/651.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "page/[0-9]+\\.html$"
+          }
+        },
+
+        {
+          "name": "应用中心",
+          "mode": "list",
+          "data_type": "cases",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.ldfuhp.com/article/497/cid/3.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "article/[0-9]+/cid/[0-9]+\\.html$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "山东蓬能机械科技",
+      "competitor_id": "山东蓬能机械科技",
+
+      "sections": [
+        {
+          "name": "产品展示",
+          "mode": "list",
+          "data_type": "products",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "http://www.pnmtcl.com/products.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "product/[0-9]+\\.html$"
+          }
+        },
+
+        {
+          "name": "产品应用",
+          "mode": "single",
+          "data_type": "cases",
+
+          "single": {
+            "url": "http://www.pnmtcl.com/yingyong.html"
+          }
+        },
+
+        {
+          "name": "新闻中心",
+          "mode": "list",
+          "data_type": "news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "http://www.pnmtcl.com/newslist.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "news/[0-9]+\\.html$"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "山西三水河科技",
+      "competitor_id": "山西三水河科技",
+
+      "sections": [
+        {
+          "name": "超高压力HPP设备",
+          "mode": "list",
+          "data_type": "products",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.hppssh.com/product/",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "product/[a-zA-Z0-9]+/[0-9]+\\.html$"
+          }
+        },
+
+        {
+          "name": "超高压应用领域",
+          "mode": "list",
+          "data_type": "cases",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.hppssh.com/yyly/jlp/",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "yyly/[a-zA-Z0-9]+/$"
+          }
+        },
+
+        {
+          "name": "新闻动态",
+          "mode": "list",
+          "data_type": "news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.hppssh.com/news/list_4_{page}.html",
+              "page_start": 1,
+              "page_end": 3
+            },
+            "link_filter_pattern": "news/baike/[0-9]+\\.html$"
+          }
+        }
+
+      ]
+    },
+    
+    {
+      "name": "上海希法液压技术",
+      "competitor_id": "上海希法液压技术",
+
+      "sections": [
+        {
+          "name": "超高压力灭菌设备",
+          "mode": "list",
+          "data_type": "products",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.seafar.com/v2/product/miejuns/",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "product/miejuns/[0-9]+\\.html$"
+          }
+        },
+
+        {
+          "name": "超高压灭菌技术应用",
+          "mode": "single",
+          "data_type": "cases",
+
+          "single": {
+            "url": "https://www.seafar.com/v2/application/chaogaoya/"
+          }
+        },
+
+        {
+          "name": "新闻动态",
+          "mode": "list",
+          "data_type": "news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.seafar.com/v2/new/index.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "new/[0-9]+\\.html$"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "沈阳广惠超高压设备",
+      "competitor_id": "沈阳广惠超高压设备",
+
+      "sections": [
+        {
+          "name": "超高压力灭菌设备",
+          "mode": "list",
+          "data_type": "products",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.seafar.com/v2/product/miejuns/",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "product/miejuns/[0-9]+\\.html$"
+          }
+        },
+
+        {
+          "name": "超高压灭菌技术应用",
+          "mode": "single",
+          "data_type": "cases",
+
+          "single": {
+            "url": "https://www.seafar.com/v2/application/chaogaoya/"
+          }
+        },
+
+        {
+          "name": "新闻动态",
+          "mode": "list",
+          "data_type": "news",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.seafar.com/v2/new/index.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "new/[0-9]+\\.html$"
+          }
+        }
+
+      ]
     }
+    
   ]
 }
