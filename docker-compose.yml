@@ -1,4 +1,70 @@
 services:
+  prefect-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.prefect
+    container_name: chuntian-prefect-server
+    restart: unless-stopped
+    environment:
+      PREFECT_SERVER_ANALYTICS_ENABLED: "false"
+    command: ["prefect", "server", "start", "--host", "0.0.0.0", "--port", "4200"]
+    ports:
+      - "${PREFECT_SERVER_PORT:-4200}:4200"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4200/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  prefect-deploy:
+    build:
+      context: .
+      dockerfile: Dockerfile.prefect
+    container_name: chuntian-prefect-deploy
+    restart: "no"
+    env_file:
+      - .env
+    environment:
+      PREFECT_API_URL: ${PREFECT_API_URL:-http://prefect-server:4200/api}
+      PREFECT_WORK_POOL: ${PREFECT_WORK_POOL:-crawler-pool}
+    command:
+      [
+        "bash",
+        "-lc",
+        "prefect work-pool create ${PREFECT_WORK_POOL:-crawler-pool} --type process || true; prefect deploy --all",
+      ]
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+
+  prefect-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.prefect
+    container_name: chuntian-prefect-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PREFECT_API_URL: ${PREFECT_API_URL:-http://prefect-server:4200/api}
+      PREFECT_WORK_POOL: ${PREFECT_WORK_POOL:-crawler-pool}
+      MEILI_URL: http://meilisearch:7700
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    command:
+      ["prefect", "worker", "start", "--pool", "${PREFECT_WORK_POOL:-crawler-pool}", "--type", "process"]
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+      prefect-deploy:
+        condition: service_completed_successfully
+      meilisearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./output:/app/output
+
   meilisearch:
     image: getmeili/meilisearch:v1.11
     container_name: chuntian-meilisearch

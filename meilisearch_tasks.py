@@ -189,6 +189,56 @@ def _url_hash(url: str) -> str:
     return hashlib.md5(url.encode()).hexdigest()
 
 
+def _wait_for_update_task(client: meilisearch.Client, task_result: dict):
+    task_uid = None
+    if isinstance(task_result, dict):
+        task_uid = task_result.get("taskUid") or task_result.get("uid")
+    if task_uid is not None and hasattr(client, "wait_for_task"):
+        final_task = client.wait_for_task(task_uid, timeout_in_ms=15000)
+        if isinstance(final_task, dict) and final_task.get("status") == "failed":
+            error = final_task.get("error") or {}
+            code = error.get("code", "unknown_error")
+            message = error.get("message", "unknown message")
+            raise RuntimeError(f"Meilisearch task failed [{code}]: {message}")
+
+
+def _fallback_merge_profile(
+    existing: dict, site_name: str, new_items: list[dict]
+) -> dict:
+    merged = dict(existing)
+    if not merged.get("name") and site_name:
+        merged["name"] = site_name
+
+    for field in ("products", "cases", "solutions", "technologies"):
+        value = merged.get(field)
+        merged[field] = list(value) if isinstance(value, list) else []
+
+    for item in new_items:
+        data_type = item.get("data_type")
+        if data_type not in COMPETITOR_PROFILE_DTYPES:
+            continue
+
+        source_url = str(item.get("url") or "").strip()
+        if not source_url:
+            continue
+
+        raw_content = str(item.get("raw_content") or "")
+        current_items = [
+            row
+            for row in merged[data_type]
+            if not (isinstance(row, dict) and row.get("source_url") == source_url)
+        ]
+        current_items.append(
+            {
+                "source_url": source_url,
+                "raw_content": raw_content,
+            }
+        )
+        merged[data_type] = current_items
+
+    return merged
+
+
 # ─── Index Tasks ─────────────────────────────────────────────────────────────
 
 
@@ -219,7 +269,10 @@ def index_competitor_news_task(
         "raw_content": raw_content,
         **extracted,
     }
-    client.index("competitor_news").update_documents([doc])
+    task_result = client.index("competitor_news").update_documents(
+        [doc], primary_key="id"
+    )
+    _wait_for_update_task(client, task_result)
     print(f"  [index] competitor_news: {meta['url']}")
 
 
@@ -248,7 +301,10 @@ def index_industry_news_task(
         "raw_content": raw_content,
         **extracted,
     }
-    client.index("industry_news").update_documents([doc])
+    task_result = client.index("industry_news").update_documents(
+        [doc], primary_key="id"
+    )
+    _wait_for_update_task(client, task_result)
     print(f"  [index] industry_news: {meta['url']}")
 
 
@@ -277,7 +333,8 @@ def index_trade_show_task(
         "raw_content": raw_content,
         **extracted,
     }
-    client.index("trade_shows").update_documents([doc])
+    task_result = client.index("trade_shows").update_documents([doc], primary_key="id")
+    _wait_for_update_task(client, task_result)
     print(f"  [index] trade_shows: {name} {year}")
 
 
@@ -330,7 +387,11 @@ def upsert_competitor_profile_task(
         updated = call_llm(llm_cfg, system_prompt, user_content)
     except Exception as e:
         print(f"  [警告] LLM 合并失败 [{competitor_id}]: {e}")
-        return
+        updated = _fallback_merge_profile(existing, site_name, new_items)
+
+    if not isinstance(updated, dict):
+        print(f"  [警告] LLM 合并结果非对象，使用兜底合并 [{competitor_id}]")
+        updated = _fallback_merge_profile(existing, site_name, new_items)
 
     # 确保必要的 meta 字段不被 LLM 遗漏
     updated["id"] = doc_id
@@ -338,7 +399,8 @@ def upsert_competitor_profile_task(
     updated["competitor_id"] = competitor_id
     updated["updated_at"] = datetime.now(timezone.utc).isoformat()
 
-    idx.update_documents([updated])
+    task_result = idx.update_documents([updated], primary_key="id")
+    _wait_for_update_task(client, task_result)
     print(
         f"  [index] competitor_profiles: upserted {competitor_id} ({len(new_items)} new items)"
     )
@@ -409,7 +471,9 @@ def index_workspace_flow(
 
     # 按 competitor_id 归集 profile 类数据
     # {competitor_id: {"site_name": str, "items": [{"data_type":..., "url":..., "raw_content":...}]}}
-    profiles: dict = defaultdict(lambda: {"site_name": "", "items": []})
+    profiles: defaultdict[str, dict[str, object]] = defaultdict(
+        lambda: {"site_name": "", "items": []}
+    )
 
     json_files = _collect_json_sidecars(workspace, date, json_paths)
     if not json_files:
@@ -424,8 +488,8 @@ def index_workspace_flow(
 
         meta = payload.get("meta", {})
         raw_content = payload.get("raw_content", "")
-        data_type = meta.get("data_type")
-        competitor_id = meta.get("competitor_id")
+        data_type = str(meta.get("data_type") or "").strip()
+        competitor_id = str(meta.get("competitor_id") or "").strip()
 
         if not raw_content:
             print(f"  [跳过] raw_content 为空: {jf.name}")
@@ -437,15 +501,27 @@ def index_workspace_flow(
         #     continue
 
         if data_type in COMPETITOR_PROFILE_DTYPES and competitor_id:
-            if not profiles[competitor_id]["site_name"]:
-                profiles[competitor_id]["site_name"] = meta["site_name"]
-            profiles[competitor_id]["items"].append(
-                {
-                    "data_type": data_type,
-                    "url": meta["url"],
-                    "raw_content": raw_content,
-                }
-            )
+            bucket = profiles[competitor_id]
+            if not bucket["site_name"]:
+                bucket["site_name"] = meta["site_name"]
+
+            items = bucket["items"]
+            if isinstance(items, list):
+                items.append(
+                    {
+                        "data_type": data_type,
+                        "url": meta["url"],
+                        "raw_content": raw_content,
+                    }
+                )
+            else:
+                bucket["items"] = [
+                    {
+                        "data_type": data_type,
+                        "url": meta["url"],
+                        "raw_content": raw_content,
+                    }
+                ]
 
         elif data_type == "news" and competitor_id:
             index_competitor_news_task(client, llm_config, prompts, meta, raw_content)
@@ -461,14 +537,19 @@ def index_workspace_flow(
 
     # competitor_profiles：每个竞争对手一次 LLM 合并调用
     for competitor_id, data in profiles.items():
+        site_name = str(data.get("site_name") or "")
+        new_items = data.get("items")
+        if not isinstance(new_items, list):
+            new_items = []
+
         upsert_competitor_profile_task(
             client,
             llm_config,
             prompts,
             workspace,
             competitor_id,
-            data["site_name"],
-            data["items"],
+            site_name,
+            new_items,
         )
 
     print(f"\n  Indexing 完成 [workspace={workspace}, date={date}]")
