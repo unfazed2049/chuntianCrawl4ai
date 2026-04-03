@@ -111,6 +111,7 @@ def _ensure_hybrid_search_if_configured(client: meilisearch.Client, meili_config
     index_uids = hybrid_cfg.get(
         "indexes", ["industry_news", "competitor_news", "trade_shows"]
     )
+    document_templates: dict[str, str] = hybrid_cfg.get("document_templates") or {}
     embedder_settings = hybrid_cfg.get("embedder") or _build_openai_rest_embedder(
         hybrid_cfg
     )
@@ -120,23 +121,32 @@ def _ensure_hybrid_search_if_configured(client: meilisearch.Client, meili_config
         )
         return
 
-    ensure_hybrid_settings(
-        client=client,
-        index_uids=index_uids,
-        embedder_name=embedder_name,
-        embedder_settings=embedder_settings,
-        filterable_attrs=[
-            "workspace",
-            "category",
-            "competitor_id",
-            "competitor_name",
-            "source_section",
-            "year",
-            "month",
-            "name",
-            "country",
-        ],
-    )
+    filterable_attrs = [
+        "workspace",
+        "category",
+        "competitor_id",
+        "competitor_name",
+        "source_section",
+        "year",
+        "month",
+        "name",
+        "country",
+    ]
+
+    for index_uid in index_uids:
+        current_embedder_settings = dict(embedder_settings)
+        if index_uid in document_templates:
+            current_embedder_settings["documentTemplate"] = document_templates[
+                index_uid
+            ]
+
+        ensure_hybrid_settings(
+            client=client,
+            index_uids=[index_uid],
+            embedder_name=embedder_name,
+            embedder_settings=current_embedder_settings,
+            filterable_attrs=filterable_attrs,
+        )
     print(f"  [index] hybrid settings updated for {len(index_uids)} indexes")
 
 

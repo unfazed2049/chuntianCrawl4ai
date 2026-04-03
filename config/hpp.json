@@ -498,6 +498,29 @@
           }
         }
       ]
+    },
+
+    {
+      "name": "中国仪器网",
+      "stealth": true,
+
+      "sections": [
+        {
+          "name": "最新展会",
+          "mode": "list",
+          "data_type": "trade_show",
+
+          "list": {
+            "pagination": {
+              "type": "url_template",
+              "url_template": "https://www.86175.com/exhibition/t0/list_p{page}.html",
+              "page_start": 1,
+              "page_end": 1
+            },
+            "link_filter_pattern": "exhibition/detail/[0-9]+\\.html"
+          }
+        }
+      ]
     }
   ]
 }

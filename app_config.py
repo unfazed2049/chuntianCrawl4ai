@@ -1,4 +1,5 @@
 import os
+import json
 from pathlib import Path
 
 
@@ -25,6 +26,28 @@ def _split_csv(value: str | None) -> list[str]:
     if not value:
         return []
     return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _parse_json_dict(value: str | None) -> dict[str, str]:
+    if not value:
+        return {}
+
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError:
+        return {}
+
+    if not isinstance(payload, dict):
+        return {}
+
+    result: dict[str, str] = {}
+    for key, raw in payload.items():
+        if not isinstance(key, str) or not isinstance(raw, str):
+            continue
+        cleaned = raw.strip()
+        if cleaned:
+            result[key.strip()] = cleaned
+    return result
 
 
 def load_app_config(env_file: str = ".env", skip_dotenv: bool = False) -> dict:
@@ -66,6 +89,9 @@ def load_app_config(env_file: str = ".env", skip_dotenv: bool = False) -> dict:
 
     meili_hybrid_enabled = _to_bool(os.getenv("MEILI_HYBRID_ENABLED"), default=False)
     if meili_hybrid_enabled:
+        document_templates = _parse_json_dict(
+            os.getenv("MEILI_HYBRID_DOCUMENT_TEMPLATES")
+        )
         meilisearch_config["hybrid_search"] = {
             "enabled": True,
             "embedder_name": os.getenv("MEILI_HYBRID_EMBEDDER_NAME", "openai-emb"),
@@ -81,6 +107,7 @@ def load_app_config(env_file: str = ".env", skip_dotenv: bool = False) -> dict:
                 "MEILI_HYBRID_DOCUMENT_TEMPLATE",
                 "{{doc.title}}\n{{doc.summary}}\n{{doc.cleaned_content}}",
             ),
+            "document_templates": document_templates,
         }
 
     return {

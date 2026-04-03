@@ -262,6 +262,8 @@ async def crawl_sites_flow(
     print("=" * 60)
 
     all_json_paths: list[str] = []
+    indexed_sections = 0
+    failed_sections = 0
     for site in sites:
         if filter_site and site["name"] != filter_site:
             continue
@@ -269,9 +271,11 @@ async def crawl_sites_flow(
         print(f"\n【站点】{site['name']}")
         sections: list[dict] = site.get("sections", [])
 
-        from crawl4ai.async_configs import BrowserConfig
-
-        browser_config = BrowserConfig(headless=True)
+        browser_config = build_browser_config(
+            {
+                "stealth": site.get("stealth"),
+            }
+        )
         async with AsyncWebCrawler(config=browser_config) as crawler:
             for section in sections:
                 if filter_section and section["name"] != filter_section:
@@ -287,16 +291,27 @@ async def crawl_sites_flow(
                 )
                 all_json_paths.extend(section_json_paths)
 
-    print("\n" + "=" * 60)
-    print("全部爬取完成，开始 Meilisearch 写入")
-    print("=" * 60)
+                if section_json_paths:
+                    try:
+                        index_workspace_flow(
+                            workspace=workspace,
+                            meili_config=meili_cfg,
+                            llm_config=llm_cfg,
+                            json_paths=section_json_paths,
+                        )
+                        indexed_sections += 1
+                    except Exception as e:
+                        failed_sections += 1
+                        print(
+                            f"  [警告] Section 写入 Meilisearch 失败 [{site['name']} / {section['name']}]: {e}"
+                        )
 
-    index_workspace_flow(
-        workspace=workspace,
-        meili_config=meili_cfg,
-        llm_config=llm_cfg,
-        json_paths=all_json_paths,
+    print("\n" + "=" * 60)
+    print("全部爬取完成")
+    print(
+        f"Meilisearch 分段写入完成：成功 {indexed_sections} 个 section，失败 {failed_sections} 个 section"
     )
+    print("=" * 60)
 
     print("\n" + "=" * 60)
     print("全部任务完成")

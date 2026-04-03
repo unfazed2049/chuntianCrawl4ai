@@ -69,6 +69,21 @@ class AppConfigTests(unittest.TestCase):
             "{{doc.title}}\n{{doc.summary}}\n{{doc.cleaned_content}}",
         )
 
+    def test_hybrid_document_templates_supports_per_index_mapping(self):
+        os.environ["LLM_PROVIDER"] = "gpt-4o-mini"
+        os.environ["LLM_API_TOKEN"] = "sk-test"
+        os.environ["MEILI_HYBRID_ENABLED"] = "true"
+        os.environ["MEILI_HYBRID_DOCUMENT_TEMPLATES"] = (
+            '{"trade_shows":"{{doc.name}}\\n{{doc.summary}}"}'
+        )
+
+        cfg = load_app_config(skip_dotenv=True)
+
+        self.assertEqual(
+            cfg["meilisearch_config"]["hybrid_search"]["document_templates"],
+            {"trade_shows": "{{doc.name}}\n{{doc.summary}}"},
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

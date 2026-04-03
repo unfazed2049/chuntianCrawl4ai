@@ -80,7 +80,12 @@ def build_browser_config(section_cfg: dict | None) -> BrowserConfig:
     """将 section.browser_config 与默认配置合并后转换为 BrowserConfig"""
     merged = DEFAULT_BROWSER_CONFIG.copy()
     if section_cfg:
-        merged.update({k: v for k, v in section_cfg.items() if v is not None})
+        normalized = dict(section_cfg)
+        if "stealth" in normalized and "enable_stealth" not in normalized:
+            normalized["enable_stealth"] = normalized.pop("stealth")
+        else:
+            normalized.pop("stealth", None)
+        merged.update({k: v for k, v in normalized.items() if v is not None})
     return BrowserConfig(**merged)
 
 

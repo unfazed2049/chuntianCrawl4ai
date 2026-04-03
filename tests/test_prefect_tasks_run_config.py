@@ -2,7 +2,7 @@ import unittest
 
 from prefect.cache_policies import NO_CACHE
 
-from prefect_tasks import build_crawler_run_config
+from prefect_tasks import build_browser_config, build_crawler_run_config
 from prefect_tasks import (
     collect_urls_js_pagination_task,
     collect_urls_url_template_task,
@@ -22,6 +22,13 @@ class BuildCrawlerRunConfigTests(unittest.TestCase):
         cfg = build_crawler_run_config({})
 
         self.assertEqual(cfg.markdown_generator.content_source, "cleaned_html")
+
+
+class BuildBrowserConfigTests(unittest.TestCase):
+    def test_supports_stealth_alias(self):
+        cfg = build_browser_config({"stealth": True})
+
+        self.assertTrue(getattr(cfg, "enable_stealth", False))
 
 
 class TaskCachePolicyTests(unittest.TestCase):
