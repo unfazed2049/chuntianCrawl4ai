@@ -63,6 +63,12 @@ class _FakeClient:
 
 
 class MeilisearchProfileUpsertTests(unittest.TestCase):
+    def test_build_doc_id_keeps_valid_ascii_id(self):
+        doc_id = meilisearch_tasks._build_competitor_profile_doc_id(
+            "default", "hiperbaric"
+        )
+        self.assertEqual(doc_id, "default_hiperbaric")
+
     def test_wait_for_update_task_raises_when_meili_task_failed(self):
         client = _FakeClient(
             wait_result={
@@ -105,7 +111,9 @@ class MeilisearchProfileUpsertTests(unittest.TestCase):
                 ],
             )
 
-        doc = client.index("competitor_profiles").docs["hpp_山西海普瑞科技有限公司"]
+        doc = client.index("competitor_profiles").docs[
+            "hpp_a52758927db606784ec8185099a6a718"
+        ]
         self.assertEqual(doc["competitor_id"], "山西海普瑞科技有限公司")
         self.assertEqual(doc["workspace"], "hpp")
         self.assertEqual(doc["name"], "山西海普瑞科技有限公司")

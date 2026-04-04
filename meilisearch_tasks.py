@@ -29,6 +29,26 @@ _PROMPT_KEY = {
 }
 
 
+def _build_competitor_profile_doc_id(workspace: str, competitor_id: str) -> str:
+    raw_doc_id = f"{workspace}_{competitor_id}"
+    if (
+        re.fullmatch(r"[A-Za-z0-9_-]+", raw_doc_id)
+        and len(raw_doc_id.encode("utf-8")) <= 511
+    ):
+        return raw_doc_id
+
+    safe_workspace = (
+        re.sub(r"[^A-Za-z0-9_-]+", "_", workspace).strip("_") or "workspace"
+    )
+    competitor_hash = hashlib.md5(competitor_id.encode("utf-8")).hexdigest()
+    doc_id = f"{safe_workspace}_{competitor_hash}"
+    if len(doc_id.encode("utf-8")) <= 511:
+        return doc_id
+
+    workspace_hash = hashlib.md5(workspace.encode("utf-8")).hexdigest()
+    return f"{workspace_hash}_{competitor_hash}"
+
+
 def _parse_keep_flag(value) -> bool:
     if isinstance(value, bool):
         return value
@@ -356,7 +376,7 @@ def upsert_competitor_profile_task(
     - Upsert 到 Meilisearch
     同一 url 的内容视为更新（内容已重新爬取），由 LLM 处理替换逻辑
     """
-    doc_id = f"{workspace}_{competitor_id}"
+    doc_id = _build_competitor_profile_doc_id(workspace, competitor_id)
     idx = client.index("competitor_profiles")
 
     # 获取现有档案
