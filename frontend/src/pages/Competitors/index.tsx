@@ -6,6 +6,7 @@ import {
   Newspaper,
   Radar,
   Wrench,
+  X,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { hybridSearch } from "../../api/meilisearch";
@@ -41,8 +42,46 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("zh-CN", {
   timeStyle: "short",
 });
 
-function renderStructuredItem(item: unknown) {
-  return JSON.stringify(item, null, 2);
+function buildPreviewMarkdown(content: string) {
+  if (content.includes("\\n") && !content.includes("\n")) {
+    return content.replaceAll("\\n", "\n");
+  }
+
+  return content;
+}
+
+function getStructuredItemRawContent(item: unknown) {
+  if (!item || typeof item !== "object") {
+    return "暂无内容。";
+  }
+
+  const rawCandidate = (item as { raw_content?: unknown }).raw_content;
+  if (typeof rawCandidate === "string" && rawCandidate.trim().length > 0) {
+    return rawCandidate.trim();
+  }
+
+  const cleanedCandidate = (item as { cleaned_content?: unknown }).cleaned_content;
+  if (
+    typeof cleanedCandidate === "string" &&
+    cleanedCandidate.trim().length > 0
+  ) {
+    return cleanedCandidate.trim();
+  }
+
+  return "暂无内容。";
+}
+
+function getStructuredItemTitle(item: unknown, fallback: string) {
+  if (!item || typeof item !== "object") {
+    return fallback;
+  }
+
+  const titleCandidate = (item as { title?: unknown; name?: unknown; heading?: unknown });
+  const text = [titleCandidate.title, titleCandidate.name, titleCandidate.heading].find(
+    (value) => typeof value === "string" && value.trim().length > 0,
+  );
+
+  return typeof text === "string" ? text.trim() : fallback;
 }
 
 function getHostname(url?: string) {
@@ -85,6 +124,21 @@ export default function Competitors() {
   const [loadingList, setLoadingList] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("news");
+  const [previewStructuredItem, setPreviewStructuredItem] = useState<{
+    title: string;
+    content: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setPreviewStructuredItem(null);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   useEffect(() => {
     void loadCompetitors();
@@ -360,9 +414,7 @@ export default function Competitors() {
                             </p>
                           }
                           content={
-                            <ReactMarkdown>
-                              {item.cleaned_content.slice(0, 280)}
-                            </ReactMarkdown>
+                            <ReactMarkdown>{item.cleaned_content}</ReactMarkdown>
                           }
                         />
                       ))}
@@ -400,7 +452,30 @@ export default function Competitors() {
                             {structuredSections[tabKey].map((item, index) => (
                               <div
                                 key={`${tabKey}-${index}`}
-                                className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50"
+                                role="button"
+                                tabIndex={0}
+                                className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 transition-[border-color,background-color] hover:border-slate-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+                                onClick={() => {
+                                  setPreviewStructuredItem({
+                                    title: getStructuredItemTitle(
+                                      item,
+                                      `${tabs.find((entry) => entry.key === tabKey)?.label} #${index + 1}`,
+                                    ),
+                                    content: getStructuredItemRawContent(item),
+                                  });
+                                }}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    setPreviewStructuredItem({
+                                      title: getStructuredItemTitle(
+                                        item,
+                                        `${tabs.find((entry) => entry.key === tabKey)?.label} #${index + 1}`,
+                                      ),
+                                      content: getStructuredItemRawContent(item),
+                                    });
+                                  }
+                                }}
                               >
                                 <div className="border-b border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700">
                                   {
@@ -409,9 +484,15 @@ export default function Competitors() {
                                   }{" "}
                                   #{index + 1}
                                 </div>
-                                <pre className="overflow-x-auto p-5 text-xs leading-6 text-slate-700">
-                                  {renderStructuredItem(item)}
-                                </pre>
+                                <div className="p-5">
+                                  <div className="max-w-none text-sm leading-7 text-slate-700 [&_p]:my-3 [&_ul]:my-3 [&_ol]:my-3 [&_li]:my-1.5">
+                                    <ReactMarkdown>
+                                      {buildPreviewMarkdown(
+                                        getStructuredItemRawContent(item),
+                                      )}
+                                    </ReactMarkdown>
+                                  </div>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -436,6 +517,38 @@ export default function Competitors() {
           </Tabs>
         </div>
       </div>
+
+      {previewStructuredItem ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6"
+          onClick={() => setPreviewStructuredItem(null)}
+        >
+          <section
+            className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <h3 className="truncate text-lg font-semibold text-slate-900">
+                {previewStructuredItem.title}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setPreviewStructuredItem(null)}
+                className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </header>
+            <div className="overflow-y-auto px-5 py-4">
+              <div className="max-w-none text-[15px] leading-9 text-slate-700 [&_h1]:mb-4 [&_h1]:mt-8 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:tracking-tight [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mb-3 [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-semibold [&_p]:my-5 [&_p]:leading-9 [&_ul]:my-5 [&_ol]:my-5 [&_li]:my-2 [&_li]:leading-9 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-slate-300 [&_blockquote]:pl-4 [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-slate-900 [&_pre]:p-4 [&_pre]:text-slate-100 [&_table]:my-6 [&_table]:w-full [&_table]:border-separate [&_table]:border-spacing-0 [&_table]:border-2 [&_table]:border-slate-300 [&_table]:bg-white [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-50 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-slate-300 [&_td]:px-3 [&_td]:py-2">
+                <ReactMarkdown>
+                  {buildPreviewMarkdown(previewStructuredItem.content)}
+                </ReactMarkdown>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

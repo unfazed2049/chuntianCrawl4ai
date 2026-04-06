@@ -1,26 +1,18 @@
 deployments:
-  - name: crawl-hpp-12h
+  - name: crawl-hpp
     entrypoint: prefect_flows.py:crawl_sites_flow
     parameters:
       config_name: hpp
       filter_site: null
       filter_section: null
-    schedules:
-      - cron: "0 */12 * * *"
-        timezone: "Asia/Shanghai"
-        active: true
     work_pool:
       name: crawler-pool
 
-  - name: crawl-hpp-company-daily
+  - name: crawl-hpp-company
     entrypoint: prefect_flows.py:crawl_sites_flow
     parameters:
       config_name: hpp-company
       filter_site: null
       filter_section: null
-    schedules:
-      - cron: "0 2 * * *"
-        timezone: "Asia/Shanghai"
-        active: true
     work_pool:
       name: crawler-pool
