@@ -10,7 +10,7 @@ RUN sed -i 's|deb.debian.org|mirrors.tuna.tsinghua.edu.cn|g; s|security.debian.o
     && apt-get install -y --no-install-recommends build-essential curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir \
+RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple \
     "prefect>=3.6.24,<4" \
     "crawl4ai>=0.8.6,<0.9" \
     "meilisearch>=0.40.0,<0.41" \
